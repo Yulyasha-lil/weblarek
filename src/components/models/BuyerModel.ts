@@ -1,10 +1,10 @@
 import { IBuyer } from "../../types/index";
 
 export class BuyerModel {
-    payment: 'online' | 'cash';
-    email: string;
-    phone: string;
-    address: string;
+    protected payment: 'online' | 'cash';
+    protected email: string;
+    protected phone: string;
+    protected address: string;
 
     constructor() {
       this.payment = 'online';
@@ -35,35 +35,29 @@ export class BuyerModel {
       this.phone = '';
       this.address = '';
     }
-
     validateField(field: keyof IBuyer, value: string): string | null {
       switch (field) {
         case 'email':
-          const emailRegex = /^[^\s@]+@([^\s@]+\.)+[^\s@]+$/;
-          if (!value) return "Email не может быть пустым";
-          if (!emailRegex.test(value)) return "Введите корректный email";
+          if (!value || value.trim() === '') return "Email не может быть пустым";
           return null;
 
         case 'phone':
-          const phoneRegex = /^\+?[0-9]{10,15}$/;
-          if (!value) return "Телефон не может быть пустым";
-          if (!phoneRegex.test(value.replace(/[\s-]/g, ''))) 
-            return "Введите корректный телефон";
+          if (!value || value.trim() === '') return "Телефон не может быть пустым";
           return null;
+          
         case 'address':
-          if (!value) return 'Адрес не может быть пустым';
-          if (value.length < 15) return 'Адрес должен содержать минимум 15 символов';
+          if (!value || value.trim() === '') return "Адрес не может быть пустым";
           return null;
         
         case 'payment':
-          if (!value) return 'Способ оплаты не выбран';
+          if (!value) return "Способ оплаты не выбран";
           if (value !== 'online' && value !== 'cash') {
-            return 'Выберите корректный способ оплаты';
+            return "Выберите корректный способ оплаты";
           }
           return null;
           
         default:
-          return null
+          return null;
       }
     }
 

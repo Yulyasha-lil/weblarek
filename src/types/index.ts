@@ -32,6 +32,7 @@ export interface IProductsResponse {
 // Данные для отправки заказа (расширяем IBuyer)
 export interface IOrder extends IBuyer {
   items: string[]; // массив id товаров
+  total: number;    // общая сумма заказа
 }
 
 // Ответ сервера после отправки заказа

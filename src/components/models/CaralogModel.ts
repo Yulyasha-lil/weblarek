@@ -2,8 +2,8 @@ import { IProduct } from "../../types/index";
 
 export class CatalogModel {
 
-  items:  IProduct[];
-  selectedItem: IProduct | null
+  protected items:  IProduct[];
+  protected selectedItem: IProduct | null
 
   constructor() {
     this.items = [];

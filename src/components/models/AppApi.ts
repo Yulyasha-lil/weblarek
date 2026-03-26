@@ -6,7 +6,9 @@ import { IApi, IProduct, IOrder, IOrderResult, IProductsResponse } from "../../t
  * Отвечает за бизнес-логику запросов к серверу
  */
 export class AppApi {
-  api: IApi;
+  
+  protected api: IApi;
+
   constructor(api: IApi) {
     this.api = api;
   }

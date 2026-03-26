@@ -2,7 +2,7 @@ import { IProduct } from "../../types/index"
 
 export class CartModel {
 
-  items: IProduct[]
+  protected items: IProduct[]
 
   constructor() {
     this.items = [];
