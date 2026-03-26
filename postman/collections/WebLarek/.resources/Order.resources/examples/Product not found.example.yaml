@@ -1,0 +1,46 @@
+$kind: http-example
+request:
+  url: "{{baseUrl}}/order"
+  method: POST
+  body:
+    type: json
+    content: "{\r
+
+      \    \"payment\": \"online\",\r
+
+      \    \"email\": \"test@test.ru\",\r
+
+      \    \"phone\": \"+71234567890\",\r
+
+      \    \"address\": \"Spb Vosstania 1\",\r
+
+      \    \"total\": 2200,\r
+
+      \    \"items\": [\r
+
+      \        \"854cef69-976d-4c2a-a18c-2aa45046c390\",\r
+
+      \        \"c101ab44-ed99-4a54-990d-47aa2bb4e7d\"\r
+
+      \    ]\r
+
+      }"
+response:
+  statusCode: 400
+  statusText: Bad Request
+  headers:
+    X-Powered-By: Express
+    Access-Control-Allow-Origin: "*"
+    Content-Type: application/json; charset=utf-8
+    Content-Length: "82"
+    ETag: W/"52-JUt2bfLJfICMao2+gjMqyE5JOxw"
+    Date: Thu, 11 Jan 2024 20:05:10 GMT
+    Connection: keep-alive
+    Keep-Alive: timeout=5
+  body:
+    type: json
+    content: |-
+      {
+          "error": "Товар с id c101ab44-ed99-4a54-990d-47aa2bb4e7d не найден"
+      }
+order: 2000

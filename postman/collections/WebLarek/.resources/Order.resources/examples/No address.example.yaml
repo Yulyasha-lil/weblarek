@@ -1,0 +1,44 @@
+$kind: http-example
+request:
+  url: "{{baseUrl}}/order"
+  method: POST
+  body:
+    type: json
+    content: "{\r
+
+      \    \"payment\": \"online\",\r
+
+      \    \"email\": \"test@test.ru\",\r
+
+      \    \"phone\": \"+71234567890\",\r
+
+      \    \"total\": 2200,\r
+
+      \    \"items\": [\r
+
+      \        \"854cef69-976d-4c2a-a18c-2aa45046c390\",\r
+
+      \        \"c101ab44-ed99-4a54-990d-47aa2bb4e7d9\"\r
+
+      \    ]\r
+
+      }"
+response:
+  statusCode: 400
+  statusText: Bad Request
+  headers:
+    X-Powered-By: Express
+    Access-Control-Allow-Origin: "*"
+    Content-Type: application/json; charset=utf-8
+    Content-Length: "40"
+    ETag: W/"28-ZSb1dC6GSyDT0zlpvtUDOGWyTOw"
+    Date: Thu, 11 Jan 2024 20:05:53 GMT
+    Connection: keep-alive
+    Keep-Alive: timeout=5
+  body:
+    type: json
+    content: |-
+      {
+          "error": "Не указан адрес"
+      }
+order: 4000

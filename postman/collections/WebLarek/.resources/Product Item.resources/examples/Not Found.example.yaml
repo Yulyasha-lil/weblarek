@@ -1,0 +1,23 @@
+$kind: http-example
+request:
+  url: "{{baseUrl}}/product/854cef69-976d-4c2a"
+  method: GET
+response:
+  statusCode: 404
+  statusText: Not Found
+  headers:
+    X-Powered-By: Express
+    Access-Control-Allow-Origin: "*"
+    Content-Type: application/json; charset=utf-8
+    Content-Length: "20"
+    ETag: W/"14-s+qz4i6AO6tDYm6PsMCkX6W2fzY"
+    Date: Thu, 11 Jan 2024 19:46:49 GMT
+    Connection: keep-alive
+    Keep-Alive: timeout=5
+  body:
+    type: json
+    content: |-
+      {
+          "error": "NotFound"
+      }
+order: 2000
