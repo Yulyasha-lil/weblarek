@@ -1,4 +1,5 @@
 import { IBuyer } from "../../types/index";
+import { IEvents } from "../base/Events";
 
 export class BuyerModel {
     protected payment: 'online' | 'cash';
@@ -6,7 +7,7 @@ export class BuyerModel {
     protected phone: string;
     protected address: string;
 
-    constructor() {
+    constructor(protected events: IEvents) {
       this.payment = 'online';
       this.email = '';
       this.phone = '';
@@ -18,6 +19,8 @@ export class BuyerModel {
       if (data.email !== undefined) this.email = data.email;
       if (data.phone !== undefined) this.phone = data.phone;
       if (data.address !== undefined) this.address = data.address;
+
+      this.events.emit('buyer:changed', this.getData());
     }
     
     getData(): IBuyer {
@@ -34,6 +37,8 @@ export class BuyerModel {
       this.email = '';
       this.phone = '';
       this.address = '';
+
+      this.events.emit('buyer:changed', this.getData());
     }
     validateField(field: keyof IBuyer, value: string): string | null {
       switch (field) {
@@ -46,7 +51,7 @@ export class BuyerModel {
           return null;
           
         case 'address':
-          if (!value || value.trim() === '') return "Адрес не может быть пустым";
+          if (!value || value.trim() === '') return "Необходимо указать адрес";
           return null;
         
         case 'payment':
