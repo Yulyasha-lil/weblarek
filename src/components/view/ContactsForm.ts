@@ -1,16 +1,26 @@
-import { Form } from './Form';
-import { IEvents } from '../base/Events';
+import { IBuyer } from "../../types";
+import { ensureElement } from "../../utils/utils";
+import { IEvents } from "../base/Events";
+import { Form } from "./Form";
 
-export class ContactsForm extends Form<{ email: string; phone: string }> {
-    constructor(container: HTMLElement, events: IEvents) {
-        super(container, events);
-    }
-    
-    set email(value: string) {
-        this.setInputValue('email', value);
-    }
-    
-    set phone(value: string) {
-        this.setInputValue('phone', value);
-    }
+type TContactsForm = Pick<IBuyer, 'email' | 'phone'>;
+
+export class ContactsForm extends Form<TContactsForm> {
+  protected emailInput: HTMLInputElement;
+  protected phoneInput: HTMLInputElement;
+
+  constructor(container: HTMLFormElement, events: IEvents) {
+    super(container, events);
+
+    this.emailInput = ensureElement<HTMLInputElement>('input[name=email]', this.container);
+    this.phoneInput = ensureElement<HTMLInputElement>('input[name=phone]', this.container);
+  }
+
+  set email(value: string) {
+    this.emailInput.value = value;
+  }
+
+  set phone(value: string) {
+    this.phoneInput.value = value;
+  }
 }
