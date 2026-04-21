@@ -1,21 +1,20 @@
 import { Card } from "./Card";
 import { ensureElement } from "../../utils/utils";
 import { IProduct } from "../../types";
-import { IEvents } from "../base/Events";
 
 type TCardBasket = Pick<IProduct, "title" | "price"> & {
   index: number;
 };
 
 export interface ICardBasketActions {
-  onClick: (event: MouseEvent) => void;
+  onClick: () => void;
 }
 
 export class CardBasket extends Card<TCardBasket> {
   protected buttonElement: HTMLButtonElement;
   protected indexElement: HTMLElement;
 
-  constructor(container: HTMLElement, protected events: IEvents) {
+  constructor(container: HTMLElement, actions?: ICardBasketActions) {
     super(container);
 
     this.buttonElement = ensureElement<HTMLButtonElement>(
@@ -27,10 +26,9 @@ export class CardBasket extends Card<TCardBasket> {
       this.container,
     );
 
-    this.buttonElement.addEventListener("click", () => {
-      this.events.emit("basket:delete");
-    });
-
+    if (actions?.onClick) {
+      this.buttonElement.addEventListener("click", actions.onClick);
+    }
   }
 
   set index(value: number) {

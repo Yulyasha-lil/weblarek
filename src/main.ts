@@ -11,6 +11,7 @@ import { CardBasket } from "./components/view/CardBasket";
 import { CartPreview } from "./components/view/CardPreview";
 import { OrderForm } from "./components/view/OrderForm";
 import { ContactsForm } from "./components/view/ContactsForm";
+import { Gallery } from "./components/view/Gallery";
 import { Success } from "./components/view/Success";
 import { Modal } from "./components/view/Modal";
 import { Header } from "./components/view/Header";
@@ -47,13 +48,13 @@ const catalogCardTemplate = ensureElement<HTMLTemplateElement>("#card-catalog");
 // Инициализация View
 const modal = new Modal(modalContainer, events);
 const header = new Header(events, headerContainer);
+const gallery = new Gallery(galleryContainer);
 const basket = new Basket(cloneTemplate<HTMLElement>(basketTemplate), events);
 const orderForm = new OrderForm(cloneTemplate<HTMLFormElement>(orderTemplate), events);
 const contactsForm = new ContactsForm(cloneTemplate<HTMLFormElement>(contactsTemplate), events);
 const successView = new Success(cloneTemplate<HTMLElement>(successTemplate), events);
 
-// Переменная для хранения ID товара при удалении из корзины
-let currentBasketItemId: string | null = null;
+const previewCard = new CartPreview(cloneTemplate<HTMLElement>(previewTemplate), events);
 
 // Функция обновления UI корзины
 function updateCartUI(): void {
@@ -64,24 +65,24 @@ function updateCartUI(): void {
 function renderCatalog(): void {
     const products = catalogModel.getItems();
     
-    galleryContainer.replaceChildren(
-        ...products.map((product) => {
-            const cardElement = cloneTemplate<HTMLElement>(catalogCardTemplate);
-            const card = new CardCatalog(cardElement, {
-                onClick: () => {
-                    catalogModel.setSelectedItem(product);
-                    events.emit("card:open", { item: product });
-                }
-            });
-            
-            card.title = product.title;
-            card.price = product.price ?? null;
-            card.image = product.image;
-            card.category = product.category;
-            
-            return card.render();
-        })
-    );
+    const cards = products.map((product) => {
+        const cardElement = cloneTemplate<HTMLElement>(catalogCardTemplate);
+        const card = new CardCatalog(cardElement, {
+            onClick: () => {
+                catalogModel.setSelectedItem(product);
+                events.emit("card:open", { item: product });
+            }
+        });
+        
+        card.title = product.title;
+        card.price = product.price ?? null;
+        card.image = product.image;
+        card.category = product.category;
+        
+        return card.render();
+    });
+    
+    gallery.render({ items: cards });
 }
 
 // Функция рендера корзины
@@ -91,27 +92,19 @@ function renderBasketModal(): void {
     
     basketItems.forEach((item, index) => {
         const cardElement = cloneTemplate<HTMLLIElement>(basketCardTemplate);
-        const basketCard = new CardBasket(cardElement, events);
-        
-        // Сохраняем ID товара для обработчика удаления
-        const deleteHandler = () => {
-            currentBasketItemId = item.id;
-            events.emit("basket:delete");
-        };
-        
-        const button = cardElement.querySelector(".card__button");
-        if (button) {
-            button.addEventListener("click", (e) => {
-                e.stopPropagation();
-                deleteHandler();
-            });
-        }
+        const basketCard = new CardBasket(cardElement, {
+            onClick: () => {
+                cartModel.removeItem(item.id);
+                renderBasketModal();
+                updateCartUI();
+            }
+        });
         
         basketCard.index = index + 1;
         basketCard.title = item.title;
         basketCard.price = item.price ?? null;
         
-        basketCards.push(cardElement);
+        basketCards.push(basketCard.render() as HTMLLIElement);
     });
     
     basket.content = basketCards;
@@ -166,25 +159,22 @@ function renderContactsFormModal(): void {
 
 // Функция рендера превью товара
 function renderPreviewModal(item: IProduct): void {
-    const cardElement = cloneTemplate<HTMLElement>(previewTemplate);
-    const cardPreview = new CartPreview(cardElement, events);
-    
     const isInCart = cartModel.contains(item.id);
     const isAvailable = item.price !== null;
     
-    cardPreview.title = item.title;
-    cardPreview.price = item.price ?? null;
-    cardPreview.image = item.image;
-    cardPreview.category = item.category;
-    cardPreview.description = item.description || "";
-    cardPreview.buttonText = !isAvailable 
+    previewCard.title = item.title;
+    previewCard.price = item.price ?? null;
+    previewCard.image = item.image;
+    previewCard.category = item.category;
+    previewCard.description = item.description || "";
+    previewCard.buttonText = !isAvailable 
         ? "Недоступно" 
         : isInCart 
             ? "Удалить из корзины" 
             : "В корзину";
-    cardPreview.buttonDisabled = !isAvailable;
+    previewCard.buttonDisabled = !isAvailable;
     
-    modal.render({ content: cardPreview.render() });
+    modal.render({ content: previewCard.render() });
 }
 
 // Подписка на изменения моделей
@@ -197,26 +187,20 @@ events.on("catalog:changed", () => {
 });
 
 events.on("buyer:changed", () => {
-    // Обновляем формы, если они открыты
-    const modalContent = document.querySelector(".modal_active .modal__content");
-    if (modalContent) {
-        const form = modalContent.querySelector("form");
-        if (form?.name === "order") {
-            const buyerData = buyerModel.getData();
-            const errors = buyerModel.validateAll();
-            orderForm.payment = buyerData.payment;
-            orderForm.address = buyerData.address;
-            orderForm.valid = !errors.payment && !errors.address;
-            orderForm.errors = [errors.payment, errors.address].filter(Boolean).join(", ");
-        } else if (form?.name === "contacts") {
-            const buyerData = buyerModel.getData();
-            const errors = buyerModel.validateAll();
-            contactsForm.email = buyerData.email;
-            contactsForm.phone = buyerData.phone;
-            contactsForm.valid = !errors.email && !errors.phone;
-            contactsForm.errors = [errors.email, errors.phone].filter(Boolean).join(", ");
-        }
-    }
+    const buyerData = buyerModel.getData();
+    const errors = buyerModel.validateAll();
+    
+    // Обновляем форму заказа
+    orderForm.payment = buyerData.payment;
+    orderForm.address = buyerData.address;
+    orderForm.valid = !errors.payment && !errors.address;
+    orderForm.errors = [errors.payment, errors.address].filter(Boolean).join(", ");
+    
+    // Обновляем форму контактов
+    contactsForm.email = buyerData.email;
+    contactsForm.phone = buyerData.phone;
+    contactsForm.valid = !errors.email && !errors.phone;
+    contactsForm.errors = [errors.email, errors.phone].filter(Boolean).join(", ");
 });
 
 // Обработчики событий
@@ -244,25 +228,19 @@ events.on("basket-toggle", () => {
             }
         }
         
-        // Обновляем кнопку в превью, если модалка открыта
-        const button = document.querySelector(".modal_active .card__button");
-        if (button) {
-            const isInCart = cartModel.contains(selectedItem.id);
-            button.textContent = isInCart ? "Удалить из корзины" : "В корзину";
-        }
+        const isInCart = cartModel.contains(selectedItem.id);
+        const isAvailable = selectedItem.price !== null;
         
-        // Закрываем модалку с превью
+        previewCard.buttonText = !isAvailable 
+            ? "Недоступно" 
+            : isInCart 
+                ? "Удалить из корзины" 
+                : "В корзину";
+        
         modal.close();
     }
 });
 
-events.on("basket:delete", () => {
-    if (currentBasketItemId) {
-        cartModel.removeItem(currentBasketItemId);
-        currentBasketItemId = null;
-        renderBasketModal();
-    }
-});
 
 events.on("basket:open", () => {
     renderBasketModal();
